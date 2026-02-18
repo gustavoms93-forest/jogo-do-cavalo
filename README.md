@@ -1,4 +1,4 @@
-[index.html.html](https://github.com/user-attachments/files/25394579/index.html.html)
+[index.html](https://github.com/user-attachments/files/25394864/index.html)
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -498,6 +498,10 @@
 
             const cell = document.getElementById(`cell-${r}-${c}`);
             cell.classList.add('visited', 'current', 'success-anim');
+
+            // MOSTRA O NÚMERO DA SEQUÊNCIA
+            cell.innerText = state.visitedCount;
+
             // Remove animação após tocar
             setTimeout(() => cell.classList.remove('success-anim'), 300);
 
