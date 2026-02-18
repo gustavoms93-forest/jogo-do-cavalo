@@ -1,4 +1,4 @@
-[index.html](https://github.com/user-attachments/files/25398783/index.html)
+[index.html](https://github.com/user-attachments/files/25398809/index.html)
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -498,11 +498,7 @@
 
             const cell = document.getElementById(`cell-${r}-${c}`);
             cell.classList.add('visited', 'current', 'success-anim');
-
-            // MOSTRA O NÚMERO DA SEQUÊNCIA
             cell.innerText = state.visitedCount;
-
-            // Remove animação após tocar
             setTimeout(() => cell.classList.remove('success-anim'), 300);
 
             updatePanel();
@@ -693,5 +689,74 @@
             });
         }
     </script>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCunrwMbJMkd_lkzyLAWn8aAL4uwo3wG7g",
+  authDomain: "jogo-do-cavalo-1191a.firebaseapp.com",
+  projectId: "jogo-do-cavalo-1191a",
+  storageBucket: "jogo-do-cavalo-1191a.firebasestorage.app",
+  messagingSenderId: "683835548077",
+  appId: "1:683835548077:web:30c65ca80b6e279af38124",
+  measurementId: "G-8SDECRW1HY"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+window.saveToRanking = async function(isWin) {
+    const record = {
+        name: state.player,
+        score: state.score,
+        classif: state.classif,
+        board: `${state.size}×${state.size}`,
+        result: isWin ? 'Vitória' : 'Derrota',
+        time: state.timeElapsed,
+        errors: state.errors,
+        date: new Date().toLocaleDateString()
+    };
+    await addDoc(collection(db, "ranking"), record);
+};
+
+window.loadRanking = async function() {
+    const container = document.getElementById('ranking-container');
+    container.innerHTML = "Carregando ranking global...";
+
+    const q = query(collection(db, "ranking"), orderBy("score", "desc"), limit(20));
+    const querySnapshot = await getDocs(q);
+
+    container.innerHTML = "";
+
+    if (querySnapshot.empty) {
+        container.innerHTML = "Nenhum registro encontrado.";
+        return;
+    }
+
+    let index = 1;
+    querySnapshot.forEach((doc) => {
+        const r = doc.data();
+        const item = document.createElement('div');
+        item.className = "ranking-item";
+
+        item.innerHTML = `
+            <div class="rank-info">
+                <h4>${index}. ${r.name}</h4>
+                <p>${r.classif} | Tempo: ${formatTime(r.time)} | Erros: ${r.errors}</p>
+            </div>
+            <div class="rank-score">
+                <h3>${r.score}</h3>
+                <p>PTS</p>
+            </div>
+        `;
+
+        container.appendChild(item);
+        index++;
+    });
+};
+</script>
+
 </body>
 </html>
