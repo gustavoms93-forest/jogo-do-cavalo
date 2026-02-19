@@ -1,65 +1,53 @@
-import { initializeApp }
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+// Importar funções do Firebase diretamente da web (Módulos CDN)
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+import { getFirestore, collection, addDoc, query, where, getDocs, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-import {
-getFirestore,
-collection,
-addDoc,
-getDocs,
-query,
-orderBy,
-limit,
-where
-}
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
+// SUAS CREDENCIAIS DO FIREBASE (Copie do painel do Firebase > Project Settings)
 const firebaseConfig = {
-
-apiKey:"AIzaSyCunrwMbJMkd_lkzyLAWn8aAL4uwo3wG7g",
-
-authDomain:"jogo-do-cavalo-1191a.firebaseapp.com",
-
-projectId:"jogo-do-cavalo-1191a",
-
-storageBucket:"jogo-do-cavalo-1191a.firebasestorage.app",
-
-messagingSenderId:"683835548077",
-
-appId:"1:683835548077:web:30c65ca80b6e279af38124"
-
+    apiKey: "SUA_API_KEY_AQUI",
+    authDomain: "SEU_PROJETO.firebaseapp.com",
+    projectId: "SEU_PROJETO",
+    storageBucket: "SEU_PROJETO.appspot.com",
+    messagingSenderId: "NUMERO_AQUI",
+    appId: "APP_ID_AQUI"
 };
 
-const app=initializeApp(firebaseConfig);
+// 1. Inicializar o Firebase e a Base de Dados (Firestore)
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-const db=getFirestore(app);
-
-
-window.salvarRankingOnline=async function(data){
-
-await addDoc(
-collection(db,"elite-ranking"),
-data
-);
-
+// 2. Exportar função para GUARDAR o ranking
+window.salvarRankingOnline = async function(dados) {
+    try {
+        await addDoc(collection(db, "ranking"), dados);
+        console.log("Pontuação enviada para a nuvem com sucesso!");
+    } catch (erro) {
+        console.error("Erro ao tentar guardar online:", erro);
+    }
 };
 
+// 3. Exportar função para CARREGAR o ranking
+window.carregarRankingOnline = async function(tabSize) {
+    try {
+        // Pedir à base de dados os melhores scores para o tamanho do tabuleiro atual
+        const consulta = query(
+            collection(db, "ranking"), 
+            where("size", "==", tabSize),
+            orderBy("score", "desc"),
+            limit(10)
+        );
+        
+        const resultados = await getDocs(consulta);
+        let listaRanking = [];
+        
+        resultados.forEach((doc) => {
+            listaRanking.push(doc.data());
+        });
+        
+        return listaRanking;
 
-window.carregarRankingOnline=async function(size){
-
-const q=query(
-
-collection(db,"elite-ranking"),
-
-where("size","==",size),
-
-orderBy("score","desc"),
-
-limit(10)
-
-);
-
-const snap=await getDocs(q);
-
-return snap.docs.map(doc=>doc.data());
-
+    } catch (erro) {
+        console.error("Erro ao descarregar ranking online:", erro);
+        return []; // Retorna uma lista vazia para evitar que o ecrã bloqueie
+    }
 };
