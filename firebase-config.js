@@ -33,6 +33,7 @@ const app=initializeApp(firebaseConfig);
 
 const db=getFirestore(app);
 
+
 window.salvarRankingOnline=async function(data){
 
 await addDoc(
@@ -42,13 +43,19 @@ data
 
 };
 
+
 window.carregarRankingOnline=async function(size){
 
 const q=query(
+
 collection(db,"elite-ranking"),
+
 where("size","==",size),
+
 orderBy("score","desc"),
+
 limit(10)
+
 );
 
 const snap=await getDocs(q);
