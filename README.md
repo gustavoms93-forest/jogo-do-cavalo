@@ -1,759 +1,539 @@
-<html lang="pt-BR">
+<!DOCTYPE html>
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jogo do Cavalo —</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Jogo do Cavalo — Elite Cognitiva v5.2</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    
     <style>
         :root {
-            --bg-color: #0f172a;
-            --panel-bg: #1e293b;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
+            --bg: #0f172a;
+            --panel: #1e293b;
             --accent: #3b82f6;
             --accent-hover: #2563eb;
-            --success: #10b981;
-            --error: #ef4444;
-            --board-5: #64748b;
-            --board-6: #16a34a;
-            --board-7: #2563eb;
-            --board-8: #9333ea;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --win: #10b981;
+            --lose: #ef4444;
+            --cell-empty: #cbd5e1;
+            --cell-text: #0f172a;
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
         }
 
         body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-
-        /* Container & Layout */
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            width: 100%;
-        }
-
-        header {
+            background: linear-gradient(135deg, var(--bg), #172554);
+            color: var(--text);
+            font-family: 'Poppins', sans-serif;
             text-align: center;
-            margin-bottom: 20px;
-            animation: fadeIn 1s ease-out;
+            min-height: 100vh;
+            padding: 20px 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
-        header h1 {
-            font-size: 2rem;
-            color: var(--text-main);
+        h1 {
+            font-size: clamp(1.5rem, 4vw, 2.2rem);
+            margin-bottom: 20px;
             text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
 
-        header p {
-            color: var(--text-muted);
-            font-size: 0.9rem;
-        }
-
-        /* Views */
-        .view { display: none; animation: fadeIn 0.4s ease-out; }
-        .view.active { display: block; }
-
-        /* Menu & Instructions */
-        .menu-card, .instructions {
-            background: var(--panel-bg);
-            border-radius: 12px;
-            padding: 25px;
+        .panel {
+            background: var(--panel);
+            padding: 20px;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 600px;
             margin-bottom: 20px;
-            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.05);
         }
 
-        .input-group {
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            align-items: center;
             margin-bottom: 15px;
         }
 
-        .input-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: var(--text-muted);
-            font-weight: 600;
-        }
-
-        input[type="text"], select {
-            width: 100%;
-            padding: 12px;
+        input, select, button {
+            padding: 10px 15px;
             border-radius: 8px;
-            border: 1px solid #334155;
-            background: #0f172a;
-            color: white;
-            font-size: 1rem;
+            border: none;
+            font-family: inherit;
+            font-size: 14px;
             outline: none;
-            transition: border-color 0.3s;
         }
 
-        input[type="text"]:focus, select:focus {
+        input, select {
+            background: #334155;
+            color: white;
+            border: 1px solid #475569;
+            transition: border 0.3s;
+        }
+
+        input:focus, select:focus {
             border-color: var(--accent);
         }
 
         button {
             background: var(--accent);
             color: white;
-            border: none;
-            padding: 14px 24px;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: bold;
+            font-weight: 600;
             cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3);
+        }
+
+        button:hover {
+            background: var(--accent-hover);
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .instructions {
+            text-align: left;
+            font-size: 14px;
+            color: var(--text-muted);
+            line-height: 1.6;
+            display: none; /* Escondido por padrão para não poluir, pode adicionar botão para mostrar */
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: space-between;
+            background: #0f172a;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            margin-top: 15px;
+            font-size: clamp(12px, 3vw, 16px);
+        }
+
+        .stats-bar span { color: var(--accent); }
+
+        #board {
+            display: grid;
+            gap: 6px;
             width: 100%;
-            transition: background 0.3s, transform 0.1s;
-        }
-
-        button:hover { background: var(--accent-hover); }
-        button:active { transform: scale(0.98); }
-        
-        button.danger { background: #b91c1c; margin-top: 15px; }
-        button.danger:hover { background: #991b1b; }
-
-        .instructions h2 { margin-bottom: 10px; font-size: 1.3rem; border-bottom: 1px solid #334155; padding-bottom: 5px; }
-        .instructions ul { margin-left: 20px; margin-top: 10px; color: var(--text-muted); line-height: 1.6; }
-
-        /* Game Panel */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-            gap: 10px;
-            background: var(--panel-bg);
-            padding: 15px;
+            max-width: 450px; /* Tamanho máximo no PC */
+            aspect-ratio: 1 / 1; /* Mantém sempre quadrado */
+            margin: 20px auto;
+            background: var(--panel);
+            padding: 10px;
             border-radius: 12px;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        .stat-item {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .stat-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
-        .stat-val { font-size: 1.2rem; font-weight: bold; margin-top: 4px; }
-        
-        .val-error { color: var(--error); }
-        .val-success { color: var(--success); }
-
-        /* Board */
-        .board-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin: 20px 0;
-        }
-
-        .board {
-            display: grid;
-            gap: 4px;
-            background: #334155;
-            padding: 4px;
-            border-radius: 8px;
-            width: 95vw;
-            max-width: 450px;
-            aspect-ratio: 1 / 1;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
         }
 
         .cell {
-            background: #1e293b;
-            border-radius: 4px;
+            background: var(--cell-empty);
+            color: var(--cell-text);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             cursor: pointer;
+            font-weight: 700;
+            font-size: clamp(16px, 4vw, 24px);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            user-select: none;
+            touch-action: manipulation; /* Evita zoom duplo no celular */
+            box-shadow: inset 0 -3px 0 rgba(0,0,0,0.1);
+        }
+
+        /* Estados das Células */
+        .cell:active { transform: scale(0.92); box-shadow: inset 0 0 0 rgba(0,0,0,0.1); }
+        .cell.valid { background: var(--accent); color: white; }
+        .cell.current { 
+            background: var(--win); 
+            color: white; 
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.6);
+            transform: scale(1.05);
+            z-index: 2;
+        }
+        .cell.possible {
+            background: #e2e8f0;
+            border: 3px dashed var(--accent);
+            opacity: 0.8;
+        }
+        .cell.invalid {
+            background: var(--lose) !important;
+            color: white;
+            animation: shake 0.3s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+        }
+
+        /* Barra de Progresso */
+        .progress-wrapper {
+            width: 100%;
+            max-width: 600px;
+            margin: 10px auto 20px;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 12px;
+            background: #334155;
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--accent), var(--win));
+            transition: width 0.3s ease;
+        }
+
+        /* Abas e Ranking */
+        .tabs {
             display: flex;
             justify-content: center;
-            align-items: center;
-            font-weight: bold;
-            color: rgba(255,255,255,0.2);
-            font-size: 1.2rem;
-            transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+            gap: 8px;
+            margin-top: 10px;
+            flex-wrap: wrap;
         }
 
-        .cell:hover { background: #334155; }
-        
-        .cell.visited {
-            background: var(--accent);
-            color: white;
-            cursor: default;
+        .tab {
+            padding: 8px 16px;
+            background: #334155;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s;
         }
 
-        .cell.current {
-            background: var(--success);
-            color: white;
-            box-shadow: 0 0 15px var(--success);
-            z-index: 2;
-            transform: scale(1.05);
-        }
+        .tab:hover { background: #475569; }
+        .tab.active { background: var(--accent); box-shadow: 0 4px 10px rgba(59, 130, 246, 0.4); }
 
-        .cell.error-anim { animation: shake 0.4s ease-in-out; background: var(--error) !important; color: white; }
-        .cell.success-anim { animation: pop 0.3s ease-out; }
-
-        /* Ranking Table */
-        .ranking-list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-top: 20px;
-            max-height: 60vh;
-            overflow-y: auto;
-        }
-
-        .ranking-item {
-            background: #1e293b;
-            padding: 15px;
+        .rank-item {
+            background: rgba(255,255,255,0.05);
+            margin: 8px auto;
+            padding: 12px;
+            width: 100%;
+            max-width: 400px;
             border-radius: 8px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-left: 5px solid transparent;
+            font-size: 14px;
+            border: 1px solid rgba(255,255,255,0.05);
         }
 
-        .rank-win { border-color: #064e3b; background: rgba(6, 78, 59, 0.2); }
-        .rank-loss { border-color: #7f1d1d; background: rgba(127, 29, 29, 0.2); }
+        .rank-item.win { border-left: 6px solid var(--win); }
+        .rank-item.lose { border-left: 6px solid var(--lose); }
 
-        .rank-info h4 { margin-bottom: 4px; }
-        .rank-info p { font-size: 0.85rem; color: var(--text-muted); }
-        
-        .rank-score { text-align: right; }
-        .rank-score h3 { color: var(--accent); }
-        .rank-score p { font-size: 0.8rem; font-weight: bold; }
-
-        .badge {
-            display: inline-block;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 0.7rem;
-            margin-left: 5px;
-            color: white;
+        .tag {
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 12px;
+            background: #0f172a;
+            margin-left: 8px;
+            font-weight: 600;
+            text-transform: uppercase;
         }
 
-        /* Footer */
         footer {
-            text-align: center;
-            padding: 20px;
+            margin-top: 40px;
             color: var(--text-muted);
-            font-size: 0.9rem;
+            font-size: 12px;
             line-height: 1.5;
-            background: #0b1120;
-            margin-top: auto;
         }
-
-        /* Animations */
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
-        @keyframes pop { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
-        
-        /* Modals */
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.8);
-            display: flex; justify-content: center; align-items: center;
-            z-index: 100;
-            visibility: hidden; opacity: 0;
-            transition: all 0.3s;
-        }
-        .modal-overlay.active { visibility: visible; opacity: 1; }
-        .modal-content {
-            background: var(--panel-bg); padding: 30px; border-radius: 12px;
-            text-align: center; max-width: 400px; width: 90%;
-            transform: scale(0.9); transition: all 0.3s;
-        }
-        .modal-overlay.active .modal-content { transform: scale(1); }
-        .modal-content h2 { margin-bottom: 15px; font-size: 1.8rem; }
-        .modal-content p { color: var(--text-muted); margin-bottom: 10px; }
-        .modal-content .score-display { font-size: 2.5rem; color: var(--accent); font-weight: bold; margin: 15px 0; }
-        .modal-content .class-display { font-size: 1.2rem; margin-bottom: 25px; padding: 5px; border-radius: 4px; background: rgba(255,255,255,0.05); }
-
     </style>
 </head>
+
 <body>
 
-    <div class="container">
-        <header>
-            <h1>Jogo do Cavalo</h1>
-            <p>Sistema Cognitivo Elite</p>
-        </header>
+<h1>♞ Elite Cognitiva</h1>
 
-        <div id="view-menu" class="view active">
-            <div class="menu-card">
-                <div class="input-group">
-                    <label for="playerName">Nome do Jogador</label>
-                    <input type="text" id="playerName" placeholder="Digite seu nome" maxlength="20">
-                </div>
-                <div class="input-group">
-                    <label for="difficulty">Dificuldade e Peso Cognitivo</label>
-                    <select id="difficulty">
-                        <option value="5">5×5 — Iniciante (Peso: 1.0)</option>
-                        <option value="6">6×6 — Intermediário (Peso: 1.3)</option>
-                        <option value="7">7×7 — Avançado (Peso: 1.7)</option>
-                        <option value="8">8×8 — Elite (Peso: 2.2)</option>
-                    </select>
-                </div>
-                <button onclick="startGame()">INICIAR AVALIAÇÃO</button>
-                <button onclick="showRanking()" style="background: #334155; margin-top: 10px;">VER RANKING</button>
-            </div>
-
-            <div class="instructions">
-                <h2>Como Jogar</h2>
-                <ul>
-                    <li><strong>Objetivo:</strong> Preencha todo o tabuleiro movendo-se exatamente como o Cavalo do Xadrez (em "L").</li>
-                    <li><strong>Regra:</strong> Duas casas numa direção, uma casa na perpendicular. Cada célula só pode ser usada uma vez.</li>
-                    <li><strong>Início:</strong> O primeiro clique no tabuleiro define sua posição inicial.</li>
-                    <li><strong>Fim de Jogo:</strong> Ocorre ao preencher o tabuleiro (Vitória), ficar sem movimentos válidos, o tempo acabar, ou atingir o limite de 3 erros (Derrota).</li>
-                    <li><strong>Sistema Cognitivo:</strong> Sua pontuação avaliará seu progresso, eficiência (precisão dos cliques), velocidade de decisão e erros.</li>
-                </ul>
-            </div>
-        </div>
-
-        <div id="view-game" class="view">
-            <div class="stats-grid" id="stats-panel">
-                <div class="stat-item"><span class="stat-label">Tempo Rest.</span><span class="stat-val" id="st-time">00:00</span></div>
-                <div class="stat-item"><span class="stat-label">Erros</span><span class="stat-val val-error" id="st-errors">0/3</span></div>
-                <div class="stat-item"><span class="stat-label">Progresso</span><span class="stat-val" id="st-prog">0%</span></div>
-                <div class="stat-item"><span class="stat-label">Eficiência</span><span class="stat-val" id="st-eff">100%</span></div>
-                <div class="stat-item"><span class="stat-label">Score Atual</span><span class="stat-val val-success" id="st-score">0</span></div>
-            </div>
-
-            <div class="board-container">
-                <div id="game-board" class="board"></div>
-            </div>
-
-            <button class="danger" onclick="giveUp()">Desistir da Partida</button>
-        </div>
-
-        <div id="view-ranking" class="view">
-            <div class="menu-card">
-                <h2>Ranking Cognitivo (Top 20)</h2>
-                <div id="ranking-container" class="ranking-list">
-                    </div>
-                <button onclick="showMenu()" style="margin-top: 20px;">Voltar ao Menu</button>
-            </div>
-        </div>
+<div class="panel">
+    <div class="controls">
+        <input id="playerName" value="Jogador" placeholder="Seu Nome">
+        <select id="mode">
+            <option value="5">Tabuleiro 5×5</option>
+            <option value="6">Tabuleiro 6×6</option>
+            <option value="7">Tabuleiro 7×7</option>
+            <option value="8">Tabuleiro 8×8</option>
+        </select>
+        <select id="timeMode">
+            <option value="standard">Tempo Padrão</option>
+            <option value="unlimited">Tempo Ilimitado</option>
+        </select>
+    </div>
+    
+    <div class="controls">
+        <button onclick="startGame()">Iniciar Jogo</button>
+        <button onclick="resetGame()" style="background: #475569;">Zerar Tabuleiro</button>
     </div>
 
-    <div id="result-modal" class="modal-overlay">
-        <div class="modal-content">
-            <h2 id="res-title">Fim de Jogo</h2>
-            <p id="res-reason">Você ficou sem movimentos.</p>
-            <div class="score-display" id="res-score">1250</div>
-            <div class="class-display" id="res-class">Nível: Excelente</div>
-            <button onclick="closeModalAndMenu()">Voltar ao Menu Principal</button>
-            <button onclick="showRankingFromModal()" style="background: #334155; margin-top: 10px;">Ver Ranking</button>
-        </div>
+    <div class="stats-bar">
+        <div>Tempo: <span id="time">0</span>s</div>
+        <div>Erros: <span id="errors" style="color: var(--lose)">0/0</span></div>
+        <div>Score: <span id="score" style="color: var(--win)">0</span></div>
     </div>
+</div>
 
-    <footer>
-        Jogo do Cavalo<br>
-        Criado por Gustavo Moreira Saraiva<br>
-        Manoel Emídio-PI, 2026
-    </footer>
+<div class="progress-wrapper">
+    <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+    </div>
+</div>
 
-    <script>
-        // --- CONFIGURAÇÕES DO JOGO ---
-        const MODES = {
-            '5': { size: 5, weight: 1.0, timeLimit: 60, color: 'var(--board-5)', maxErrors: 3 },
-            '6': { size: 6, weight: 1.3, timeLimit: 120, color: 'var(--board-6)', maxErrors: 3 },
-            '7': { size: 7, weight: 1.7, timeLimit: 240, color: 'var(--board-7)', maxErrors: 3 },
-            '8': { size: 8, weight: 2.2, timeLimit: 480, color: 'var(--board-8)', maxErrors: 3 }
-        };
+<div id="board"></div>
 
-        const MOVES = [
-            [-2, -1], [-2, 1], [-1, -2], [-1, 2],
-            [1, -2], [1, 2], [2, -1], [2, 1]
-        ];
+<div class="panel" style="margin-top: 20px;">
+    <h3>🏆 Ranking Global Local</h3>
+    <div class="tabs">
+        <div class="tab" onclick="selectTab(5)" id="tab5">5×5</div>
+        <div class="tab" onclick="selectTab(6)" id="tab6">6×6</div>
+        <div class="tab" onclick="selectTab(7)" id="tab7">7×7</div>
+        <div class="tab" onclick="selectTab(8)" id="tab8">8×8</div>
+    </div>
+    <div id="ranking" style="margin-top: 15px;"></div>
+</div>
 
-        // --- ESTADO GLOBAL ---
-        let state = {
-            player: '',
-            size: 5,
-            mode: null,
-            board: [],
-            visitedCount: 0,
-            totalCells: 25,
-            currentRow: null,
-            currentCol: null,
-            errors: 0,
-            totalClicks: 0,
-            timeLeft: 0,
-            timeElapsed: 0,
-            timerInterval: null,
-            active: false,
-            score: 0,
-            classif: ''
-        };
+<footer>
+    Jogo do Cavalo v5.2<br>
+    Criado por Gustavo Moreira Saraiva<br>
+    Manoel Emídio-PI, 2026
+</footer>
 
-        // --- NAVEGAÇÃO ---
-        function switchView(viewId) {
-            document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
-            document.getElementById(viewId).classList.add('active');
-        }
+<script>
+    const weights = {5:1, 6:1.3, 7:1.7, 8:2.2};
+    const errorLimits = {5:3, 6:4, 7:5, 8:6};
+    const defaultTimes = {5:60, 6:120, 7:240, 8:480};
 
-        function showMenu() { switchView('view-menu'); }
-        function showRanking() { loadRanking(); switchView('view-ranking'); }
-        function showRankingFromModal() {
-            document.getElementById('result-modal').classList.remove('active');
-            showRanking();
-        }
-        function closeModalAndMenu() {
-            document.getElementById('result-modal').classList.remove('active');
-            showMenu();
-        }
+    let size = 5, board = [], current = 1, lastPos = null;
+    let startTime = 0, errors = 0, totalAttempts = 0;
+    let active = false, timer = null, timeLimit = 60;
+    let timeMode = "standard";
 
-        // --- INICIALIZAÇÃO DO JOGO ---
-        function startGame() {
-            const nameInput = document.getElementById('playerName').value.trim();
-            state.player = nameInput || 'Jogador Desconhecido';
-            state.size = parseInt(document.getElementById('difficulty').value);
-            state.mode = MODES[state.size];
-            
-            state.totalCells = state.size * state.size;
-            state.visitedCount = 0;
-            state.errors = 0;
-            state.totalClicks = 0;
-            state.timeLeft = state.mode.timeLimit;
-            state.timeElapsed = 0;
-            state.currentRow = null;
-            state.currentCol = null;
-            state.active = true;
-            state.score = 0;
+    let currentTab = localStorage.getItem("lastMode") || 5;
+    const moves = [[2,1],[1,2],[-1,2],[-2,1],[-2,-1],[-1,-2],[1,-2],[2,-1]];
 
-            // Limpa tabuleiro lógico
-            state.board = Array(state.size).fill().map(() => Array(state.size).fill(false));
+    // DOM Elements
+    const boardDiv = document.getElementById("board");
+    const playerName = document.getElementById("playerName");
+    const modeSelect = document.getElementById("mode");
+    const timeModeSelect = document.getElementById("timeMode");
+    const timeSpan = document.getElementById("time");
+    const errorsSpan = document.getElementById("errors");
+    const scoreSpan = document.getElementById("score");
+    const progressFill = document.getElementById("progressFill");
+    const rankingDiv = document.getElementById("ranking");
 
-            renderBoard();
-            updatePanel();
-            switchView('view-game');
+    function startGame() {
+        size = parseInt(modeSelect.value);
+        timeMode = timeModeSelect.value;
+        timeLimit = defaultTimes[size];
+        localStorage.setItem("lastMode", size);
 
-            clearInterval(state.timerInterval);
-            state.timerInterval = setInterval(gameTick, 1000);
-        }
-
-        function renderBoard() {
-            const boardEl = document.getElementById('game-board');
-            boardEl.style.gridTemplateColumns = `repeat(${state.size}, 1fr)`;
-            boardEl.innerHTML = '';
-
-            for (let r = 0; r < state.size; r++) {
-                for (let c = 0; c < state.size; c++) {
-                    const cell = document.createElement('div');
-                    cell.className = 'cell';
-                    cell.id = `cell-${r}-${c}`;
-                    cell.onclick = () => handleCellClick(r, c);
-                    boardEl.appendChild(cell);
-                }
-            }
-        }
-
-        // --- LÓGICA PRINCIPAL ---
-        function handleCellClick(r, c) {
-            if (!state.active) return;
-            state.totalClicks++;
-
-            // Primeiro movimento (Escolhe onde começar)
-            if (state.currentRow === null) {
-                moveTo(r, c);
-                return;
-            }
-
-            if (isValidMove(r, c)) {
-                moveTo(r, c);
-            } else {
-                registerError(r, c);
-            }
-        }
-
-        function isValidMove(r, c) {
-            if (state.board[r][c]) return false; // Já visitado
-            const dr = Math.abs(state.currentRow - r);
-            const dc = Math.abs(state.currentCol - c);
-            return (dr === 2 && dc === 1) || (dr === 1 && dc === 2);
-        }
-
-        function moveTo(r, c) {
-            // Remove estado 'current' da anterior
-            if (state.currentRow !== null) {
-                const prevCell = document.getElementById(`cell-${state.currentRow}-${state.currentCol}`);
-                prevCell.classList.remove('current');
-                prevCell.innerHTML = '';
-            }
-
-            state.currentRow = r;
-            state.currentCol = c;
-            state.board[r][c] = true;
-            state.visitedCount++;
-
-            const cell = document.getElementById(`cell-${r}-${c}`);
-            cell.classList.add('visited', 'current', 'success-anim');
-            cell.innerText = state.visitedCount;
-            setTimeout(() => cell.classList.remove('success-anim'), 300);
-
-            updatePanel();
-
-            // Checa Vitória
-            if (state.visitedCount === state.totalCells) {
-                endGame(true, "Você preencheu todo o tabuleiro!");
-                return;
-            }
-
-            // Checa se há movimentos disponíveis
-            if (!hasAvailableMoves(r, c)) {
-                endGame(false, "Não há mais movimentos válidos possíveis.");
-            }
-        }
-
-        function registerError(r, c) {
-            state.errors++;
-            const cell = document.getElementById(`cell-${r}-${c}`);
-            cell.classList.add('error-anim');
-            setTimeout(() => cell.classList.remove('error-anim'), 400);
-            
-            updatePanel();
-
-            if (state.errors >= state.mode.maxErrors) {
-                endGame(false, "Limite de erros atingido.");
-            }
-        }
-
-        function hasAvailableMoves(r, c) {
-            for (let m of MOVES) {
-                let nr = r + m[0];
-                let nc = c + m[1];
-                if (nr >= 0 && nr < state.size && nc >= 0 && nc < state.size && !state.board[nr][nc]) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        // --- LOOP DE TEMPO ---
-        function gameTick() {
-            if (!state.active) return;
-            state.timeLeft--;
-            state.timeElapsed++;
-            
-            updatePanel();
-
-            if (state.timeLeft <= 0) {
-                endGame(false, "Tempo esgotado!");
-            }
-        }
-
-        // --- PAINEL E MATEMÁTICA COGNITIVA ---
-        function calculateCurrentScore(isWin = false) {
-            if (state.visitedCount === 0) return 0;
-
-            const progress = state.visitedCount / state.totalCells;
-            const validClicks = state.visitedCount;
-            const efficiency = validClicks / Math.max(1, state.totalClicks);
-
-            const scoreBase = (progress * 500) + (efficiency * 300);
-            const bonusTempo = (state.timeLeft / state.mode.timeLimit) * 200;
-            const bonusErros = Math.max(0, 200 - (state.errors * 20));
-            const bonusVitoria = isWin ? 300 : 0;
-
-            const scoreFinal = (scoreBase + bonusTempo + bonusErros + bonusVitoria) * state.mode.weight;
-            return Math.floor(scoreFinal);
-        }
-
-        function getCognitiveClass(score) {
-            if (score < 200) return "Muito baixo";
-            if (score < 400) return "Abaixo da média";
-            if (score < 600) return "Médio";
-            if (score < 800) return "Acima da média";
-            if (score < 1000) return "Superior";
-            if (score < 1300) return "Excelente";
-            if (score < 1600) return "Elite";
-            return "Nível Gênio";
-        }
-
-        function formatTime(secs) {
-            const m = Math.floor(secs / 60).toString().padStart(2, '0');
-            const s = (secs % 60).toString().padStart(2, '0');
-            return `${m}:${s}`;
-        }
-
-        function updatePanel() {
-            const progress = ((state.visitedCount / state.totalCells) * 100).toFixed(1);
-            const efficiency = state.totalClicks > 0 ? ((state.visitedCount / state.totalClicks) * 100).toFixed(1) : 100;
-            state.score = calculateCurrentScore(false); // Estima sem bônus de vitória no meio da partida
-
-            document.getElementById('st-time').innerText = formatTime(Math.max(0, state.timeLeft));
-            document.getElementById('st-errors').innerText = `${state.errors}/${state.mode.maxErrors}`;
-            document.getElementById('st-prog').innerText = `${progress}%`;
-            document.getElementById('st-eff').innerText = `${efficiency}%`;
-            document.getElementById('st-score').innerText = state.score;
-        }
-
-        // --- FIM DE JOGO ---
-        function giveUp() {
-            if(confirm("Tem certeza que deseja desistir?")) {
-                endGame(false, "Você desistiu da partida.");
-            }
-        }
-
-        function endGame(isWin, reason) {
-            state.active = false;
-            clearInterval(state.timerInterval);
-            
-            // Recalcula score final aplicando bônus de vitória se houver
-            state.score = calculateCurrentScore(isWin);
-            state.classif = getCognitiveClass(state.score);
-
-            // Interface do Modal
-            const modal = document.getElementById('result-modal');
-            const title = document.getElementById('res-title');
-            
-            title.innerText = isWin ? "Vitória!" : "Fim de Jogo";
-            title.style.color = isWin ? varSuccess() : varError();
-            
-            document.getElementById('res-reason').innerText = reason;
-            document.getElementById('res-score').innerText = `${state.score} PTS`;
-            document.getElementById('res-class').innerText = `Classificação: ${state.classif}`;
-
-            saveToRanking(isWin);
-            modal.classList.add('active');
-        }
-
-        function varSuccess() { return getComputedStyle(document.documentElement).getPropertyValue('--success').trim(); }
-        function varError() { return getComputedStyle(document.documentElement).getPropertyValue('--error').trim(); }
-
-        // --- RANKING (PERSISTÊNCIA) ---
-        function saveToRanking(isWin) {
-            const record = {
-                name: state.player,
-                score: state.score,
-                classif: state.classif,
-                board: `${state.size}×${state.size}`,
-                boardColor: MODES[state.size].color,
-                result: isWin ? 'Vitória' : 'Derrota',
-                time: state.timeElapsed,
-                errors: state.errors,
-                date: new Date().toLocaleDateString()
-            };
-
-            let ranking = JSON.parse(localStorage.getItem('cavaloEliteRanking')) || [];
-            ranking.push(record);
-            
-            // Ordena decrescente pelo Score
-            ranking.sort((a, b) => b.score - a.score);
-            
-            // Mantém apenas o Top 20
-            if (ranking.length > 20) ranking = ranking.slice(0, 20);
-
-            localStorage.setItem('cavaloEliteRanking', JSON.stringify(ranking));
-        }
-
-        function loadRanking() {
-            const container = document.getElementById('ranking-container');
-            const ranking = JSON.parse(localStorage.getItem('cavaloEliteRanking')) || [];
-
-            container.innerHTML = '';
-
-            if (ranking.length === 0) {
-                container.innerHTML = '<p style="text-align:center; color:#94a3b8;">Nenhum registro encontrado ainda.</p>';
-                return;
-            }
-
-            ranking.forEach((r, index) => {
-                const item = document.createElement('div');
-                item.className = `ranking-item ${r.result === 'Vitória' ? 'rank-win' : 'rank-loss'}`;
-                
-                item.innerHTML = `
-                    <div class="rank-info">
-                        <h4>${index + 1}. ${r.name} 
-                            <span class="badge" style="background:${r.boardColor}">${r.board}</span>
-                            <span class="badge" style="background:${r.result === 'Vitória' ? '#064e3b' : '#7f1d1d'}">${r.result}</span>
-                        </h4>
-                        <p>${r.classif} | Tempo: ${formatTime(r.time)} | Erros: ${r.errors}</p>
-                    </div>
-                    <div class="rank-score">
-                        <h3>${r.score}</h3>
-                        <p>PTS</p>
-                    </div>
-                `;
-                container.appendChild(item);
-            });
-        }
-    </script>
-
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyCunrwMbJMkd_lkzyLAWn8aAL4uwo3wG7g",
-  authDomain: "jogo-do-cavalo-1191a.firebaseapp.com",
-  projectId: "jogo-do-cavalo-1191a",
-  storageBucket: "jogo-do-cavalo-1191a.firebasestorage.app",
-  messagingSenderId: "683835548077",
-  appId: "1:683835548077:web:30c65ca80b6e279af38124",
-  measurementId: "G-8SDECRW1HY"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-window.saveToRanking = async function(isWin) {
-    const record = {
-        name: state.player,
-        score: state.score,
-        classif: state.classif,
-        board: `${state.size}×${state.size}`,
-        result: isWin ? 'Vitória' : 'Derrota',
-        time: state.timeElapsed,
-        errors: state.errors,
-        date: new Date().toLocaleDateString()
-    };
-    await addDoc(collection(db, "ranking"), record);
-};
-
-window.loadRanking = async function() {
-    const container = document.getElementById('ranking-container');
-    container.innerHTML = "Carregando ranking global...";
-
-    const q = query(collection(db, "ranking"), orderBy("score", "desc"), limit(20));
-    const querySnapshot = await getDocs(q);
-
-    container.innerHTML = "";
-
-    if (querySnapshot.empty) {
-        container.innerHTML = "Nenhum registro encontrado.";
-        return;
+        resetGame();
+        active = true;
+        startTime = Date.now();
+        timer = setInterval(updateTimer, 1000);
     }
 
-    let index = 1;
-    querySnapshot.forEach((doc) => {
-        const r = doc.data();
-        const item = document.createElement('div');
-        item.className = "ranking-item";
+    function resetGame() {
+        clearInterval(timer);
+        board = [];
+        current = 1;
+        lastPos = null;
+        errors = 0;
+        totalAttempts = 0;
+        active = false;
+        
+        timeSpan.textContent = timeMode === "standard" ? defaultTimes[parseInt(modeSelect.value)] : "0";
+        createBoard();
+        updateUI();
+    }
 
-        item.innerHTML = `
-            <div class="rank-info">
-                <h4>${index}. ${r.name}</h4>
-                <p>${r.classif} | Tempo: ${formatTime(r.time)} | Erros: ${r.errors}</p>
-            </div>
-            <div class="rank-score">
-                <h3>${r.score}</h3>
-                <p>PTS</p>
-            </div>
-        `;
+    function createBoard() {
+        // Usa frações (fr) para criar colunas perfeitamente simétricas dependendo do tamanho (5, 6, 7 ou 8)
+        boardDiv.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
+        boardDiv.innerHTML = "";
 
-        container.appendChild(item);
-        index++;
-    });
-};
+        for(let r=0; r<size; r++) {
+            board[r] = [];
+            for(let c=0; c<size; c++) {
+                board[r][c] = 0;
+                let cell = document.createElement("div");
+                cell.className = "cell";
+                cell.id = `cell-${r}-${c}`;
+                cell.onclick = () => clickCell(r, c, cell);
+                boardDiv.appendChild(cell);
+            }
+        }
+        highlightPossibleMoves();
+    }
+
+    function validMove(r, c) {
+        if(!lastPos) return true; // Primeiro clique é livre
+        return moves.some(m => lastPos[0] + m[0] === r && lastPos[1] + m[1] === c);
+    }
+
+    function highlightPossibleMoves() {
+        // Remove destaques anteriores
+        document.querySelectorAll('.cell').forEach(c => c.classList.remove('possible'));
+        
+        if (!active || !lastPos) return;
+
+        // Adiciona destaque para as próximas jogadas válidas
+        moves.forEach(m => {
+            let nr = lastPos[0] + m[0];
+            let nc = lastPos[1] + m[1];
+            if (nr >= 0 && nr < size && nc >= 0 && nc < size && board[nr][nc] === 0) {
+                document.getElementById(`cell-${nr}-${nc}`).classList.add('possible');
+            }
+        });
+    }
+
+    function clickCell(r, c, cell) {
+        if(!active || board[r][c]) return;
+
+        totalAttempts++;
+
+        if(validMove(r, c)) {
+            // Remove a marcação "current" da célula anterior
+            if(lastPos) {
+                let prevCell = document.getElementById(`cell-${lastPos[0]}-${lastPos[1]}`);
+                if(prevCell) prevCell.classList.remove("current");
+            }
+
+            board[r][c] = current;
+            cell.textContent = current;
+            cell.classList.add("valid");
+            cell.classList.add("current");
+            lastPos = [r, c];
+            current++;
+            updateUI();
+            
+            if(current > size * size) {
+                finish(true);
+            } else {
+                highlightPossibleMoves();
+            }
+        } else {
+            errors++;
+            cell.classList.add("invalid");
+            setTimeout(() => cell.classList.remove("invalid"), 300);
+            updateUI();
+            
+            if(errors >= errorLimits[size]) finish(false);
+        }
+    }
+
+    function updateTimer() {
+        let elapsed = Math.floor((Date.now() - startTime) / 1000);
+
+        if(timeMode === "standard") {
+            let remaining = timeLimit - elapsed;
+            timeSpan.textContent = remaining;
+            if(remaining <= 0) finish(false);
+        } else {
+            timeSpan.textContent = elapsed;
+        }
+    }
+
+    function calcScore(win = false) {
+        let progress = (current - 1) / (size * size);
+        let efficiency = (current - 1) / (totalAttempts || 1);
+        let base = progress * 500 + efficiency * 300;
+        let score = (base + (win ? 300 : 0)) * weights[size];
+
+        if(timeMode === "unlimited") score *= 0.8;
+        return Math.round(score);
+    }
+
+    function updateUI() {
+        scoreSpan.textContent = calcScore(false);
+        errorsSpan.textContent = errors + "/" + errorLimits[size];
+        progressFill.style.width = ((current - 1) / (size * size) * 100) + "%";
+    }
+
+    function finish(win) {
+        active = false;
+        clearInterval(timer);
+        document.querySelectorAll('.cell').forEach(c => c.classList.remove('possible')); // Limpa visualização
+        
+        let score = calcScore(win);
+        saveRank(win, score);
+        
+        setTimeout(() => {
+            alert((win ? "🏆 VITÓRIA!" : "💀 DERROTA!") + "\nSeu Score: " + score);
+        }, 100);
+    }
+
+    function saveRank(win, score) {
+        let rank = JSON.parse(localStorage.getItem("eliteRank") || "[]");
+        rank.push({
+            player: playerName.value || "Anônimo",
+            size: size,
+            score: score,
+            win: win,
+            timeMode: timeMode
+        });
+        localStorage.setItem("eliteRank", JSON.stringify(rank));
+        selectTab(size);
+    }
+
+    function selectTab(tabSize) {
+        currentTab = tabSize;
+        document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+        
+        let activeTab = document.getElementById("tab" + tabSize);
+        if(activeTab) activeTab.classList.add("active");
+
+        let rank = JSON.parse(localStorage.getItem("eliteRank") || "[]");
+        let filtered = rank.filter(r => r.size == tabSize).sort((a, b) => b.score - a.score).slice(0, 10);
+
+        rankingDiv.innerHTML = "";
+
+        if (filtered.length === 0) {
+            rankingDiv.innerHTML = "<p style='color: var(--text-muted); font-size: 14px;'>Nenhuma partida registrada neste tamanho ainda.</p>";
+            return;
+        }
+
+        filtered.forEach((r, i) => {
+            let div = document.createElement("div");
+            div.className = "rank-item " + (r.win ? "win" : "lose");
+            
+            let playerInfo = `<strong>${i + 1}º ${r.player}</strong> <span class="tag">${r.timeMode == "standard" ? "Padrão" : "Livre"}</span>`;
+            let scoreInfo = `<span style="font-weight: 700;">Score: ${r.score}</span>`;
+            
+            div.innerHTML = `<div>${playerInfo}</div> <div>${scoreInfo}</div>`;
+            rankingDiv.appendChild(div);
+        });
+    }
+
+    // Inicialização
+    modeSelect.value = currentTab;
+    createBoard();
+    selectTab(currentTab);
+    updateUI();
 </script>
 
 </body>
