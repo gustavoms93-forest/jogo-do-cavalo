@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Jogo do Cavalo — Elite Cognitiva v5.8 (Online Fixo)</title>
+    <title>Jogo do Cavalo — Elite Cognitiva v5.9 (Online Integrado)</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     
     <style>
@@ -321,7 +321,7 @@
 </div>
 
 <footer>
-    Jogo do Cavalo v5.8 (Fix Final Online/Offline)<br>
+    Jogo do Cavalo v5.9 (Firebase Integrado)<br>
     Criado por Gustavo Moreira Saraiva<br>
     Manoel Emídio-PI, 2026
 </footer>
@@ -346,13 +346,10 @@
     function playSound(type) {
         const soundToggle = document.getElementById("soundToggle");
         if (!soundToggle.checked) return;
-
         if (!audioCtx) audioCtx = new AudioContext();
         if (audioCtx.state === 'suspended') audioCtx.resume();
-
         const oscillator = audioCtx.createOscillator();
         const gainNode = audioCtx.createGain();
-
         oscillator.connect(gainNode);
         gainNode.connect(audioCtx.destination);
         const now = audioCtx.currentTime;
@@ -408,7 +405,7 @@
     const scoreSpan = document.getElementById("score");
     const progressFill = document.getElementById("progressFill");
     const rankingDiv = document.getElementById("ranking");
-    const rankingTitle = document.getElementById("rankingTitle") || document.querySelector("h3");
+    const rankingTitle = document.getElementById("rankingTitle");
     const assistToggle = document.getElementById("assistToggle");
 
     assistToggle.addEventListener('change', () => {
@@ -573,71 +570,54 @@
         startGame();
     }
 
-    // --- AS DUAS FUNÇÕES SUBSTITUÍDAS E CORRIGIDAS ABAIXO ---
-
     async function saveRank(win, score) {
         let data = {
             player: playerName.value || "Anónimo",
-            size: parseInt(size), // CORREÇÃO: Força a ser número matemático
+            size: parseInt(size), 
             score: parseInt(score),
             win: win,
             timeMode: timeMode,
             date: Date.now()
         };
 
-        // Salva Localmente sempre
         let rank = JSON.parse(localStorage.getItem("eliteRank") || "[]");
         rank.push(data);
         localStorage.setItem("eliteRank", JSON.stringify(rank));
 
-        // Tenta salvar Online
         if(window.salvarRankingOnline) {
-            try {
-                await window.salvarRankingOnline(data);
-            } catch(e) {
-                console.warn("Erro ao salvar online:", e);
-            } 
+            try { await window.salvarRankingOnline(data); } catch(e) {}
         }
-        
         selectTab(size);
     }
 
     async function selectTab(tabSize) {
-        // CORREÇÃO: Garante que tabSize é um número, quer venha do clique ou do LocalStorage
         tabSize = parseInt(tabSize);
         currentTab = tabSize;
         
         document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
-        
         let activeTab = document.getElementById("tab" + tabSize);
         if(activeTab) activeTab.classList.add("active");
 
         rankingTitle.innerHTML = "🏆 Ranking (A Carregar...)";
         rankingDiv.innerHTML = "<p style='color:#94a3b8'>A carregar ranking...</p>";
 
-        // Puxa do computador/telemóvel primeiro
         let rankLocal = JSON.parse(localStorage.getItem("eliteRank") || "[]");
         let rankFinal = rankLocal.filter(r => parseInt(r.size) === tabSize).sort((a, b) => b.score - a.score).slice(0, 10);
-        
         rankingTitle.innerHTML = "🏆 Ranking Pessoal (Offline)";
 
-        // Puxa do Firebase
         try {
             if(window.carregarRankingOnline) {
                 let rankOnline = await window.carregarRankingOnline(tabSize);
-                
-                // Se o Firebase respondeu e trouxe dados
                 if (rankOnline && rankOnline.length > 0) {
                     rankFinal = rankOnline;
                     rankingTitle.innerHTML = "🏆 Ranking Global (Online)";
                 } else if (rankOnline && rankOnline.length === 0) {
-                    // Se conectou ao Firebase mas ainda ninguém jogou neste tamanho
                     rankingTitle.innerHTML = "🏆 Ranking Global (Online)";
-                    rankFinal = []; // força lista vazia para exibir mensagem
+                    rankFinal = []; 
                 }
             }
         } catch (erro) {
-            console.log("Firebase indisponível. A usar dados locais.");
+            console.log("A usar dados locais.");
         }
 
         rankingDiv.innerHTML = "";
@@ -663,19 +643,71 @@
         });
     }
 
-    // Inicialização do Jogo
     modeSelect.value = currentTab;
     createBoard();
     updateUI();
 
-    // Atraso de 500ms para permitir que o script do Firebase carregue as chaves antes de pedir os dados
-    setTimeout(() => {
-        selectTab(currentTab);
+    // Detetive que verifica se o Firebase ligou
+    let tentativasFirebase = 0;
+    let verificaFirebase = setInterval(() => {
+        if (window.carregarRankingOnline) {
+            clearInterval(verificaFirebase);
+            selectTab(currentTab); 
+        } else {
+            tentativasFirebase++;
+            if (tentativasFirebase >= 10) {
+                clearInterval(verificaFirebase);
+                selectTab(currentTab); 
+            }
+        }
     }, 500);
-
 </script>
 
-<script type="module" src="firebase-config.js"></script>
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, query, where, getDocs, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyCunrwMbJMkd_lkzyLAWn8aAL4uwo3wG7g",
+        authDomain: "jogo-do-cavalo-1191a.firebaseapp.com",
+        projectId: "jogo-do-cavalo-1191a",
+        storageBucket: "jogo-do-cavalo-1191a.firebasestorage.app",
+        messagingSenderId: "683835548077",
+        appId: "1:683835548077:web:30c65ca80b6e279af38124",
+        measurementId: "G-8SDECRW1HY"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    window.salvarRankingOnline = async function(dados) {
+        try {
+            await addDoc(collection(db, "ranking"), dados);
+        } catch (erro) {
+            console.error("Erro ao guardar online:", erro);
+        }
+    };
+
+    window.carregarRankingOnline = async function(tabSize) {
+        try {
+            const consulta = query(
+                collection(db, "ranking"), 
+                where("size", "==", parseInt(tabSize)),
+                orderBy("score", "desc"),
+                limit(10)
+            );
+            const resultados = await getDocs(consulta);
+            let listaRanking = [];
+            resultados.forEach((doc) => {
+                listaRanking.push(doc.data());
+            });
+            return listaRanking;
+        } catch (erro) {
+            console.error("Erro ao ler ranking online:", erro);
+            throw erro; 
+        }
+    };
+</script>
 
 </body>
 </html>
