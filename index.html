@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Jogo do Cavalo — Elite Cognitiva v5.6 (Online)</title>
+    <title>Jogo do Cavalo — Elite Cognitiva v5.8 (Online Fixo)</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     
     <style>
@@ -321,7 +321,7 @@
 </div>
 
 <footer>
-    Jogo do Cavalo v5.7 (Proteção Online e Fallback)<br>
+    Jogo do Cavalo v5.8 (Fix Final Online/Offline)<br>
     Criado por Gustavo Moreira Saraiva<br>
     Manoel Emídio-PI, 2026
 </footer>
@@ -408,7 +408,7 @@
     const scoreSpan = document.getElementById("score");
     const progressFill = document.getElementById("progressFill");
     const rankingDiv = document.getElementById("ranking");
-    const rankingTitle = document.getElementById("rankingTitle");
+    const rankingTitle = document.getElementById("rankingTitle") || document.querySelector("h3");
     const assistToggle = document.getElementById("assistToggle");
 
     assistToggle.addEventListener('change', () => {
@@ -573,79 +573,87 @@
         startGame();
     }
 
+    // --- AS DUAS FUNÇÕES SUBSTITUÍDAS E CORRIGIDAS ABAIXO ---
+
     async function saveRank(win, score) {
         let data = {
             player: playerName.value || "Anónimo",
-            size: size,
-            score: score,
+            size: parseInt(size), // CORREÇÃO: Força a ser número matemático
+            score: parseInt(score),
             win: win,
             timeMode: timeMode,
             date: Date.now()
         };
 
-        // Salvar localmente primeiro
+        // Salva Localmente sempre
         let rank = JSON.parse(localStorage.getItem("eliteRank") || "[]");
         rank.push(data);
         localStorage.setItem("eliteRank", JSON.stringify(rank));
 
-        // Tentar salvar online, mas ignorar silenciosamente se falhar
-        try {
-            if(window.salvarRankingOnline) {
-                await salvarRankingOnline(data);
-            }
-        } catch(erro) {
-            console.warn("Ranking online indisponível. Guardado apenas localmente.");
+        // Tenta salvar Online
+        if(window.salvarRankingOnline) {
+            try {
+                await window.salvarRankingOnline(data);
+            } catch(e) {
+                console.warn("Erro ao salvar online:", e);
+            } 
         }
-
+        
         selectTab(size);
     }
 
-    // --- NOVA FUNÇÃO selectTab COM TRY...CATCH E FALLBACK PARA LOCAL ---
     async function selectTab(tabSize) {
+        // CORREÇÃO: Garante que tabSize é um número, quer venha do clique ou do LocalStorage
+        tabSize = parseInt(tabSize);
         currentTab = tabSize;
+        
         document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
         
         let activeTab = document.getElementById("tab" + tabSize);
         if(activeTab) activeTab.classList.add("active");
 
         rankingTitle.innerHTML = "🏆 Ranking (A Carregar...)";
-        rankingDiv.innerHTML = "<p style='color:#94a3b8'>A carregar ranking online...</p>";
+        rankingDiv.innerHTML = "<p style='color:#94a3b8'>A carregar ranking...</p>";
 
-        let rankOnline = [];
-        let usouFirebase = false;
+        // Puxa do computador/telemóvel primeiro
+        let rankLocal = JSON.parse(localStorage.getItem("eliteRank") || "[]");
+        let rankFinal = rankLocal.filter(r => parseInt(r.size) === tabSize).sort((a, b) => b.score - a.score).slice(0, 10);
+        
+        rankingTitle.innerHTML = "🏆 Ranking Pessoal (Offline)";
 
+        // Puxa do Firebase
         try {
             if(window.carregarRankingOnline) {
-                // Tenta puxar da nuvem
-                rankOnline = await carregarRankingOnline(tabSize);
-                usouFirebase = true;
-                rankingTitle.innerHTML = "🏆 Ranking Global (Online)";
-            } else {
-                throw new Error("Função do Firebase não encontrada.");
+                let rankOnline = await window.carregarRankingOnline(tabSize);
+                
+                // Se o Firebase respondeu e trouxe dados
+                if (rankOnline && rankOnline.length > 0) {
+                    rankFinal = rankOnline;
+                    rankingTitle.innerHTML = "🏆 Ranking Global (Online)";
+                } else if (rankOnline && rankOnline.length === 0) {
+                    // Se conectou ao Firebase mas ainda ninguém jogou neste tamanho
+                    rankingTitle.innerHTML = "🏆 Ranking Global (Online)";
+                    rankFinal = []; // força lista vazia para exibir mensagem
+                }
             }
         } catch (erro) {
-            // Se falhar (falta de ficheiro, sem internet, etc), puxa os dados do localStorage!
-            console.error("Erro na comunicação online. A utilizar ranking local:", erro);
-            rankingTitle.innerHTML = "🏆 Ranking Pessoal (Offline)";
-            
-            let rankLocal = JSON.parse(localStorage.getItem("eliteRank") || "[]");
-            rankOnline = rankLocal.filter(r => r.size == tabSize).sort((a, b) => b.score - a.score).slice(0, 10);
+            console.log("Firebase indisponível. A usar dados locais.");
         }
 
         rankingDiv.innerHTML = "";
 
-        if(rankOnline.length === 0){
+        if(rankFinal.length === 0){
             rankingDiv.innerHTML = "<p style='color:#94a3b8'>Nenhuma partida registada neste modo.</p>";
             return;
         }
 
-        rankOnline.forEach((r, i) => {
+        rankFinal.forEach((r, i) => {
             let div = document.createElement("div");
             div.className = "rank-item " + (r.win ? "win" : "lose");
             div.innerHTML = `
                 <div>
                     <strong>${i + 1}º ${r.player}</strong>
-                    <span class="tag">${r.timeMode == "standard" ? "Padrão" : "Livre"}</span>
+                    <span class="tag">${r.timeMode === "standard" ? "Padrão" : "Livre"}</span>
                 </div>
                 <div>
                     Score: ${r.score}
@@ -655,10 +663,16 @@
         });
     }
 
+    // Inicialização do Jogo
     modeSelect.value = currentTab;
     createBoard();
-    selectTab(currentTab);
     updateUI();
+
+    // Atraso de 500ms para permitir que o script do Firebase carregue as chaves antes de pedir os dados
+    setTimeout(() => {
+        selectTab(currentTab);
+    }, 500);
+
 </script>
 
 <script type="module" src="firebase-config.js"></script>
