@@ -1,38 +1,38 @@
-// Importar funções do Firebase diretamente da web (Módulos CDN)
+// 1. Importar as ferramentas do Firebase diretamente da web (CDN)
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
 import { getFirestore, collection, addDoc, query, where, getDocs, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-// SUAS CREDENCIAIS DO FIREBASE (Copie do painel do Firebase > Project Settings)
+// 2. As suas chaves do Firebase
 const firebaseConfig = {
-    apiKey: "SUA_API_KEY_AQUI",
-    authDomain: "SEU_PROJETO.firebaseapp.com",
-    projectId: "SEU_PROJETO",
-    storageBucket: "SEU_PROJETO.appspot.com",
-    messagingSenderId: "NUMERO_AQUI",
-    appId: "APP_ID_AQUI"
+  apiKey: "AIzaSyCunrwMbJMkd_lkzyLAWn8aAL4uwo3wG7g",
+  authDomain: "jogo-do-cavalo-1191a.firebaseapp.com",
+  projectId: "jogo-do-cavalo-1191a",
+  storageBucket: "jogo-do-cavalo-1191a.firebasestorage.app",
+  messagingSenderId: "683835548077",
+  appId: "1:683835548077:web:30c65ca80b6e279af38124",
+  measurementId: "G-8SDECRW1HY"
 };
 
-// 1. Inicializar o Firebase e a Base de Dados (Firestore)
+// 3. Inicializa o Firebase e a Base de Dados (Firestore)
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// 2. Exportar função para GUARDAR o ranking
+// 4. Função para GUARDAR DADOS ONLINE
 window.salvarRankingOnline = async function(dados) {
     try {
         await addDoc(collection(db, "ranking"), dados);
         console.log("Pontuação enviada para a nuvem com sucesso!");
     } catch (erro) {
-        console.error("Erro ao tentar guardar online:", erro);
+        console.error("Erro ao guardar online:", erro);
     }
 };
 
-// 3. Exportar função para CARREGAR o ranking
+// 5. Função para CARREGAR DADOS ONLINE
 window.carregarRankingOnline = async function(tabSize) {
     try {
-        // Pedir à base de dados os melhores scores para o tamanho do tabuleiro atual
         const consulta = query(
             collection(db, "ranking"), 
-            where("size", "==", tabSize),
+            where("size", "==", parseInt(tabSize)),
             orderBy("score", "desc"),
             limit(10)
         );
@@ -47,7 +47,7 @@ window.carregarRankingOnline = async function(tabSize) {
         return listaRanking;
 
     } catch (erro) {
-        console.error("Erro ao descarregar ranking online:", erro);
-        return []; // Retorna uma lista vazia para evitar que o ecrã bloqueie
+        console.error("Erro ao ler ranking online:", erro);
+        throw erro; // Ativa o plano B (Offline) no index.html se falhar
     }
 };
