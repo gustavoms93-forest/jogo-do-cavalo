@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Jogo do Cavalo — Elite Cognitiva v5.10 (Online Definitivo)</title>
+    <title>Jogo do Cavalo — Elite Cognitiva v5.11 (Online Final)</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     
     <style>
@@ -210,7 +210,7 @@
 </div>
 
 <footer>
-    Jogo do Cavalo v5.10 (Online Definitivo)<br>
+    Jogo do Cavalo v5.11 (Online Final)<br>
     Criado por Gustavo Moreira Saraiva<br>
     Manoel Emídio-PI, 2026
 </footer>
@@ -226,7 +226,7 @@
 </div>
 
 <script>
-    // --- 2. CONFIGURAR FIREBASE CLÁSSICO ---
+    // --- 1. CONFIGURAR FIREBASE CLÁSSICO ---
     const firebaseConfig = {
         apiKey: "AIzaSyCunrwMbJMkd_lkzyLAWn8aAL4uwo3wG7g",
         authDomain: "jogo-do-cavalo-1191a.firebaseapp.com",
@@ -236,10 +236,11 @@
         appId: "1:683835548077:web:30c65ca80b6e279af38124"
     };
 
-    // Inicializa
+    // Inicializa a Nuvem
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
+    // Enviar dados para o Firebase
     window.salvarRankingOnline = async function(dados) {
         try {
             await db.collection("ranking").add(dados);
@@ -249,17 +250,23 @@
         }
     };
 
+    // Receber dados do Firebase (AGORA SEM O ERRO DO ÍNDICE!)
     window.carregarRankingOnline = async function(tabSize) {
         try {
+            // Pede ao Firebase apenas pelo tamanho do tabuleiro
             const snapshot = await db.collection("ranking")
                 .where("size", "==", parseInt(tabSize))
-                .orderBy("score", "desc")
-                .limit(10)
                 .get();
             
             let lista = [];
             snapshot.forEach(doc => lista.push(doc.data()));
-            return lista;
+            
+            // O próprio navegador organiza do maior para o menor
+            lista.sort((a, b) => b.score - a.score);
+            
+            // Devolve apenas os 10 melhores
+            return lista.slice(0, 10);
+            
         } catch (e) {
             console.error("Erro ao ler: ", e);
             throw e;
@@ -433,7 +440,7 @@
         document.querySelectorAll('.cell').forEach(c => c.classList.remove('possible'));
         
         let score = calcScore(win);
-        saveRank(win, score);
+        saveRank(win, score); // SALVA ONLINE
         
         if(win) playSound('win'); else playSound('lose');
         
@@ -461,9 +468,11 @@
             size: parseInt(size), score: parseInt(score), win: win, timeMode: timeMode, date: Date.now()
         };
 
+        // Salvar Offline (Segurança)
         let rank = JSON.parse(localStorage.getItem("eliteRank") || "[]");
         rank.push(data); localStorage.setItem("eliteRank", JSON.stringify(rank));
 
+        // Tenta Salvar Online
         if(window.salvarRankingOnline) {
             try { await window.salvarRankingOnline(data); } catch(e) {}
         }
@@ -479,10 +488,12 @@
         rankingTitle.innerHTML = "🏆 Ranking (A Carregar...)";
         rankingDiv.innerHTML = "<p style='color:#94a3b8'>A carregar ranking...</p>";
 
+        // Puxa Local primeiro
         let rankLocal = JSON.parse(localStorage.getItem("eliteRank") || "[]");
         let rankFinal = rankLocal.filter(r => parseInt(r.size) === tabSize).sort((a, b) => b.score - a.score).slice(0, 10);
         rankingTitle.innerHTML = "🏆 Ranking Pessoal (Offline)";
 
+        // Tenta puxar Online
         try {
             if(window.carregarRankingOnline) {
                 let rankOnline = await window.carregarRankingOnline(tabSize);
@@ -508,10 +519,11 @@
         });
     }
 
+    // Iniciar 
     modeSelect.value = currentTab;
     createBoard(); updateUI();
     
-    // O Firebase Clássico carrega imediatamente, pelo que podemos chamar o ranking direto!
+    // O Firebase agora carrega direto, sem atrasos
     selectTab(currentTab);
 </script>
 
