@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Jogo do Cavalo — Elite Cognitiva v5.15</title>
+    <title>Jogo do Cavalo — Elite Cognitiva v5.15.1</title>
     
     <meta property="og:title" content="Desafio do Cavalo - Elite Cognitiva">
     <meta property="og:description" content="O derradeiro teste de lógica e memória. Consegues preencher o tabuleiro 9x9 sem repetir casas? Tenta bater o recorde global!">
@@ -160,10 +160,13 @@
         .share-btn { 
             padding: 10px; border-radius: 10px; border: none; font-weight: 600; 
             cursor: pointer; color: white; font-size: 13px; transition: transform 0.2s;
+            display: flex; align-items: center; justify-content: center; gap: 5px;
         }
         .share-btn:hover { transform: scale(1.03); }
         .share-btn.zap { background: #25d366; }
         .share-btn.x { background: #000000; border: 1px solid #333; }
+        .share-btn.tele { background: #0088cc; }
+        .share-btn.insta { background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); }
 
         footer a { color: var(--accent); text-decoration: none; font-weight: 600; }
         footer a:hover { text-underline-offset: 4px; text-decoration: underline; }
@@ -244,7 +247,7 @@
 </div>
 
 <footer>
-    Jogo do Cavalo v5.15 (Gerador de Imagem)<br>
+    Jogo do Cavalo v5.15.1 (Social Edition)<br>
     Desenvolvido por: <a href="https://www.instagram.com/eng.florestalgustavoms?igsh=MTRqOHE0ZjcyOXdkMg==" target="_blank">@ENG.FLORESTALGUSTAVOMS</a><br>
     Manoel Emídio-PI, 2026
 </footer>
@@ -263,8 +266,10 @@
         <button id="btnShareImage" class="btn-img-share">📸 Partilhar Imagem do Recorde</button>
         
         <div class="share-grid">
-            <button id="btnZap" class="share-btn zap">WhatsApp (Texto)</button>
-            <button id="btnX" class="share-btn x">Twitter (Texto)</button>
+            <button id="btnZap" class="share-btn zap">WhatsApp</button>
+            <button id="btnTele" class="share-btn tele">Telegram</button>
+            <button id="btnX" class="share-btn x">Twitter</button>
+            <button id="btnInsta" class="share-btn insta">Instagram</button>
         </div>
     </div>
 </div>
@@ -464,23 +469,19 @@
         progressFill.style.width = ((current - 1) / (size * size) * 100) + "%";
     }
 
-    // --- O CÉREBRO GERADOR DA IMAGEM ---
     function gerarEPartilharImagem(score, size, win, playerName) {
         const canvas = document.createElement('canvas');
         canvas.width = 800;
         canvas.height = 450;
         const ctx = canvas.getContext('2d');
 
-        // Fundo Azul Escuro Moderno
         const grad = ctx.createLinearGradient(0, 0, 800, 450);
         grad.addColorStop(0, '#0f172a'); grad.addColorStop(1, '#1e293b');
         ctx.fillStyle = grad; ctx.fillRect(0, 0, 800, 450);
 
-        // Moldura
         ctx.strokeStyle = win ? '#10b981' : '#ef4444';
         ctx.lineWidth = 10; ctx.strokeRect(5, 5, 790, 440);
 
-        // Textos
         ctx.fillStyle = '#ffffff'; ctx.textAlign = 'center';
         ctx.font = 'bold 50px Arial'; ctx.fillText('♞ Elite Cognitiva', 400, 80);
 
@@ -496,18 +497,15 @@
         ctx.fillStyle = '#3b82f6'; ctx.font = '24px Arial';
         ctx.fillText('Joga grátis em: gustavoms93-forest.github.io/jogo-do-cavalo', 400, 410);
 
-        // Converter para Ficheiro
         canvas.toBlob(async (blob) => {
             const file = new File([blob], `Recorde_Elite_${score}.png`, { type: "image/png" });
             const msgTexto = `🎮 Fiz ${score} pontos no Tabuleiro ${size}x${size}! Consegues bater o meu recorde? 🔥\nJoga aqui: https://gustavoms93-forest.github.io/jogo-do-cavalo/`;
             
-            // Se estiver no telemóvel, abre o menu de partilha nativo!
             if (navigator.canShare && navigator.canShare({ files: [file] })) {
                 try {
                     await navigator.share({ title: 'Elite Cognitiva', text: msgTexto, files: [file] });
                 } catch(e) { console.log('Partilha cancelada', e); }
             } else {
-                // Se estiver no PC, faz o download para o utilizador publicar
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url; a.download = `Recorde_Elite_${score}.png`; a.click();
@@ -556,14 +554,24 @@
         const urlPartilha = "https://gustavoms93-forest.github.io/jogo-do-cavalo/";
         const msgTexto = `🎮 Jogo do Cavalo: Fiz ${score} pontos no tabuleiro ${size}x${size}! Consegues bater o meu recorde? 🔥`;
         
-        // LIGAÇÃO DO NOVO BOTÃO DE IMAGEM
         document.getElementById('btnShareImage').onclick = () => {
             gerarEPartilharImagem(score, size, win, rawName);
         };
 
-        // Textos Alternativos
+        // Redes Sociais
         document.getElementById('btnZap').onclick = () => window.open(`https://wa.me/?text=${encodeURIComponent(msgTexto + "\nJoga aqui: " + urlPartilha)}`, '_blank');
+        document.getElementById('btnTele').onclick = () => window.open(`https://t.me/share/url?url=${encodeURIComponent(urlPartilha)}&text=${encodeURIComponent(msgTexto)}`, '_blank');
         document.getElementById('btnX').onclick = () => window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(msgTexto)}&url=${encodeURIComponent(urlPartilha)}`, '_blank');
+        
+        // Instagram - O link/texto é copiado pois o Instagram bloqueia URLs de pre-preenchimento
+        document.getElementById('btnInsta').onclick = () => {
+            navigator.clipboard.writeText(msgTexto + "\nJoga aqui: " + urlPartilha).then(() => {
+                alert("O texto e o link foram copiados!\n\nAgora use o botão '📸 Partilhar Imagem' acima para guardar a foto do recorde e faça a sua publicação no Instagram.");
+                window.open('https://www.instagram.com/', '_blank');
+            }).catch(err => {
+                alert("Abra o Instagram para partilhar o seu recorde!");
+            });
+        };
 
         let rank = JSON.parse(localStorage.getItem("eliteRank") || "[]");
         rank.push(data); localStorage.setItem("eliteRank", JSON.stringify(rank));
