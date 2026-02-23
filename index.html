@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Jogo do Cavalo — Elite Cognitiva v5.11 (Online Final)</title>
+    <title>Jogo do Cavalo — Elite Cognitiva v5.12</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     
     <style>
@@ -118,6 +118,16 @@
         .rank-item.lose { border-left: 6px solid var(--lose); }
         .tag { font-size: 11px; padding: 3px 8px; border-radius: 12px; background: #0f172a; margin-left: 8px; font-weight: 600; text-transform: uppercase; }
 
+        /* MEDALHAS PARA OS 3 PRIMEIROS */
+        .rank-item:nth-child(1) { border-left: 6px solid #ffd700; background: rgba(255, 215, 0, 0.1); }
+        .rank-item:nth-child(1)::before { content: "🥇 "; font-size: 1.2em; margin-right: 5px; }
+
+        .rank-item:nth-child(2) { border-left: 6px solid #c0c0c0; background: rgba(192, 192, 192, 0.1); }
+        .rank-item:nth-child(2)::before { content: "🥈 "; font-size: 1.2em; margin-right: 5px; }
+
+        .rank-item:nth-child(3) { border-left: 6px solid #cd7f32; background: rgba(205, 127, 50, 0.1); }
+        .rank-item:nth-child(3)::before { content: "🥉 "; font-size: 1.2em; margin-right: 5px; }
+
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(5px); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
         .modal-overlay.active { opacity: 1; pointer-events: all; }
         .modal-box { background: var(--panel); padding: 40px 30px; border-radius: 20px; width: 90%; max-width: 400px; text-align: center; transform: scale(0.8) translateY(20px); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); border: 2px solid transparent; position: relative; overflow: hidden; }
@@ -133,6 +143,16 @@
         .modal-score span { font-size: 16px; color: var(--text-muted); display: block; font-weight: 400; }
         .modal-btn { width: 100%; padding: 15px; font-size: 16px; border-radius: 12px; }
 
+        /* BOTÃO DE PARTILHA NO MODAL */
+        .share-btn {
+            background: #25d366; color: white; margin-top: 10px; border: none;
+            padding: 12px; border-radius: 12px; width: 100%; cursor: pointer;
+            font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+
+        /* ESTILO PARA O LINK DO INSTAGRAM */
+        footer a { color: var(--accent); text-decoration: none; font-weight: 600; }
+        footer a:hover { text-underline-offset: 4px; text-decoration: underline; }
         footer { margin-top: 40px; color: var(--text-muted); font-size: 12px; line-height: 1.5; padding-bottom: 20px;}
     </style>
 
@@ -210,8 +230,8 @@
 </div>
 
 <footer>
-    Jogo do Cavalo v5.11 (Online Final)<br>
-    Criado por Gustavo Moreira Saraiva<br>
+    Jogo do Cavalo v5.12 (Elite Edition)<br>
+    Desenvolvido por: <a href="https://www.instagram.com/eng.florestalgustavoms?igsh=MTRqOHE0ZjcyOXdkMg==" target="_blank">@ENG.FLORESTALGUSTAVOMS</a><br>
     Manoel Emídio-PI, 2026
 </footer>
 
@@ -222,11 +242,12 @@
         <div class="modal-reason" id="modalReason">Completou o tabuleiro!</div>
         <div class="modal-score"><span>Pontuação Final</span><div id="modalScoreValue">1500</div></div>
         <button class="modal-btn" onclick="closeModalAndRestart()">Jogar Novamente</button>
+        <button id="btnZap" class="share-btn">Partilhar no WhatsApp 📱</button>
     </div>
 </div>
 
 <script>
-    // --- 1. CONFIGURAR FIREBASE CLÁSSICO ---
+    // --- CONFIGURAR FIREBASE CLÁSSICO ---
     const firebaseConfig = {
         apiKey: "AIzaSyCunrwMbJMkd_lkzyLAWn8aAL4uwo3wG7g",
         authDomain: "jogo-do-cavalo-1191a.firebaseapp.com",
@@ -236,43 +257,34 @@
         appId: "1:683835548077:web:30c65ca80b6e279af38124"
     };
 
-    // Inicializa a Nuvem
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    // Enviar dados para o Firebase
     window.salvarRankingOnline = async function(dados) {
         try {
             await db.collection("ranking").add(dados);
             console.log("Salvo no Firebase!");
-        } catch (e) {
-            console.error("Erro ao salvar: ", e);
-        }
+        } catch (e) { console.error("Erro ao salvar: ", e); }
     };
 
-    // Receber dados do Firebase (AGORA SEM O ERRO DO ÍNDICE!)
     window.carregarRankingOnline = async function(tabSize) {
         try {
-            // Pede ao Firebase apenas pelo tamanho do tabuleiro
-            const snapshot = await db.collection("ranking")
-                .where("size", "==", parseInt(tabSize))
-                .get();
-            
+            const snapshot = await db.collection("ranking").where("size", "==", parseInt(tabSize)).get();
             let lista = [];
             snapshot.forEach(doc => lista.push(doc.data()));
-            
-            // O próprio navegador organiza do maior para o menor
             lista.sort((a, b) => b.score - a.score);
-            
-            // Devolve apenas os 10 melhores
             return lista.slice(0, 10);
-            
         } catch (e) {
             console.error("Erro ao ler: ", e);
             throw e;
         }
     };
     // ----------------------------------------
+
+    // SEGURANÇA BÁSICA: Criar Token
+    function generateToken(s) {
+        return btoa(s + "elite_salt_2026").substring(0, 10);
+    }
 
     // ÁUDIO E LÓGICA DO JOGO
     const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -423,9 +435,25 @@
     function calcScore(win = false) {
         let progress = (current - 1) / (size * size);
         let efficiency = (current - 1) / (totalAttempts || 1);
-        let base = progress * 500 + efficiency * 300;
-        let score = (base + (win ? 300 : 0)) * weights[size];
-        if(timeMode === "unlimited") score *= 0.8;
+        
+        // Penalização por erros: cada erro retira 5% da base
+        let errorPenalty = 1 - (errors * 0.05);
+        let base = (progress * 500 + efficiency * 300) * (errorPenalty > 0 ? errorPenalty : 0.1);
+        
+        let score = (base + (win ? 500 : 0)) * weights[size];
+
+        // Bónus de Tempo (apenas no modo standard e se vencer)
+        if(win && timeMode === "standard") {
+            let elapsed = Math.floor((Date.now() - startTime) / 1000);
+            let timeLeft = timeLimit - elapsed;
+            if (timeLeft > 0) {
+                let timeBonus = 1 + (timeLeft / timeLimit); // Se sobrar 50% do tempo, ganha 50% extra
+                score *= timeBonus;
+            }
+        }
+
+        if(timeMode === "unlimited") score *= 0.6; // Redução maior por ser modo livre
+
         return Math.round(score);
     }
 
@@ -440,7 +468,7 @@
         document.querySelectorAll('.cell').forEach(c => c.classList.remove('possible'));
         
         let score = calcScore(win);
-        saveRank(win, score); // SALVA ONLINE
+        saveRank(win, score);
         
         if(win) playSound('win'); else playSound('lose');
         
@@ -463,16 +491,31 @@
     }
 
     async function saveRank(win, score) {
+        let rawName = playerName.value.trim();
+        
+        // Filtro de Nomes
+        if(rawName.length < 2) rawName = "Jogador Anónimo";
+        if(rawName.length > 15) rawName = rawName.substring(0, 15);
+
         let data = {
-            player: playerName.value || "Anónimo",
-            size: parseInt(size), score: parseInt(score), win: win, timeMode: timeMode, date: Date.now()
+            player: rawName,
+            size: parseInt(size), 
+            score: parseInt(score), 
+            win: win, 
+            timeMode: timeMode, 
+            date: Date.now(),
+            v: generateToken(score) // Token de segurança
         };
 
-        // Salvar Offline (Segurança)
+        // Configurar Botão WhatsApp (com o link da sua página!)
+        const msg = `🎮 Jogo do Cavalo: Fiz ${score} pontos no tabuleiro ${size}x${size}! Consegues bater o meu recorde? 🔥\nJoga aqui: https://gustavoms93-forest.github.io/jogo-do-cavalo/`;
+        document.getElementById('btnZap').onclick = () => {
+            window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
+        };
+
         let rank = JSON.parse(localStorage.getItem("eliteRank") || "[]");
         rank.push(data); localStorage.setItem("eliteRank", JSON.stringify(rank));
 
-        // Tenta Salvar Online
         if(window.salvarRankingOnline) {
             try { await window.salvarRankingOnline(data); } catch(e) {}
         }
@@ -488,12 +531,10 @@
         rankingTitle.innerHTML = "🏆 Ranking (A Carregar...)";
         rankingDiv.innerHTML = "<p style='color:#94a3b8'>A carregar ranking...</p>";
 
-        // Puxa Local primeiro
         let rankLocal = JSON.parse(localStorage.getItem("eliteRank") || "[]");
         let rankFinal = rankLocal.filter(r => parseInt(r.size) === tabSize).sort((a, b) => b.score - a.score).slice(0, 10);
         rankingTitle.innerHTML = "🏆 Ranking Pessoal (Offline)";
 
-        // Tenta puxar Online
         try {
             if(window.carregarRankingOnline) {
                 let rankOnline = await window.carregarRankingOnline(tabSize);
@@ -519,13 +560,11 @@
         });
     }
 
-    // Iniciar 
     modeSelect.value = currentTab;
     createBoard(); updateUI();
-    
-    // O Firebase agora carrega direto, sem atrasos
     selectTab(currentTab);
 </script>
 
 </body>
 </html>
+
