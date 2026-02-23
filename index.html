@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Jogo do Cavalo — Elite Cognitiva v5.12</title>
+    <title>Jogo do Cavalo — Elite Cognitiva v5.13</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     
     <style>
@@ -86,14 +86,14 @@
         .stats-bar span { color: var(--accent); }
 
         #board {
-            display: grid; gap: 6px; width: 100%; max-width: 450px; aspect-ratio: 1 / 1;
-            margin: 20px auto; background: var(--panel); padding: 10px; border-radius: 12px;
+            display: grid; gap: 4px; width: 100%; max-width: 450px; aspect-ratio: 1 / 1;
+            margin: 20px auto; background: var(--panel); padding: 8px; border-radius: 12px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.3);
         }
         .cell {
-            background: var(--cell-empty); color: var(--cell-text); border-radius: 8px;
+            background: var(--cell-empty); color: var(--cell-text); border-radius: 6px;
             display: flex; align-items: center; justify-content: center; cursor: pointer;
-            font-weight: 700; font-size: clamp(16px, 4vw, 24px); transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 700; font-size: clamp(12px, 3.5vw, 22px); transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             user-select: none; touch-action: manipulation; box-shadow: inset 0 -3px 0 rgba(0,0,0,0.1);
         }
         .cell:active { transform: scale(0.92); box-shadow: inset 0 0 0 rgba(0,0,0,0.1); }
@@ -109,7 +109,7 @@
         .progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent), var(--win)); transition: width 0.3s ease; }
 
         .tabs { display: flex; justify-content: center; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
-        .tab { padding: 8px 16px; background: #334155; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.2s; }
+        .tab { padding: 8px 14px; background: #334155; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.2s; }
         .tab:hover { background: #475569; }
         .tab.active { background: var(--accent); box-shadow: 0 4px 10px rgba(59, 130, 246, 0.4); }
         
@@ -139,16 +139,21 @@
         .modal-win .modal-title { color: var(--win); }
         .modal-lose .modal-title { color: var(--lose); }
         .modal-reason { color: var(--text-muted); font-size: 15px; margin-bottom: 20px; }
-        .modal-score { font-size: 36px; font-weight: 700; color: white; margin-bottom: 30px; }
+        .modal-score { font-size: 36px; font-weight: 700; color: white; margin-bottom: 25px; }
         .modal-score span { font-size: 16px; color: var(--text-muted); display: block; font-weight: 400; }
-        .modal-btn { width: 100%; padding: 15px; font-size: 16px; border-radius: 12px; }
+        .modal-btn { width: 100%; padding: 15px; font-size: 16px; border-radius: 12px; margin-bottom: 15px; }
 
-        /* BOTÃO DE PARTILHA NO MODAL */
-        .share-btn {
-            background: #25d366; color: white; margin-top: 10px; border: none;
-            padding: 12px; border-radius: 12px; width: 100%; cursor: pointer;
-            font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px;
+        /* REDES SOCIAIS */
+        .share-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+        .share-btn { 
+            padding: 12px 10px; border-radius: 10px; border: none; font-weight: 600; 
+            cursor: pointer; color: white; display: flex; align-items: center; 
+            justify-content: center; gap: 6px; font-size: 14px; transition: transform 0.2s;
         }
+        .share-btn:hover { transform: scale(1.03); }
+        .share-btn.zap { background: #25d366; grid-column: span 2; }
+        .share-btn.x { background: #000000; border: 1px solid #333; }
+        .share-btn.tele { background: #0088cc; }
 
         /* ESTILO PARA O LINK DO INSTAGRAM */
         footer a { color: var(--accent); text-decoration: none; font-weight: 600; }
@@ -182,7 +187,7 @@
             <option value="6">Tabuleiro 6×6</option>
             <option value="7">Tabuleiro 7×7</option>
             <option value="8">Tabuleiro 8×8</option>
-        </select>
+            <option value="9">Tabuleiro 9×9</option> </select>
         <select id="timeMode">
             <option value="standard">Tempo Padrão</option>
             <option value="unlimited">Tempo Ilimitado</option>
@@ -225,12 +230,12 @@
         <div class="tab" onclick="selectTab(6)" id="tab6">6×6</div>
         <div class="tab" onclick="selectTab(7)" id="tab7">7×7</div>
         <div class="tab" onclick="selectTab(8)" id="tab8">8×8</div>
-    </div>
+        <div class="tab" onclick="selectTab(9)" id="tab9">9×9</div> </div>
     <div id="ranking" style="margin-top: 15px;"></div>
 </div>
 
 <footer>
-    Jogo do Cavalo v5.12 (Elite Edition)<br>
+    Jogo do Cavalo v5.13 (Ultimate 9x9 & Social)<br>
     Desenvolvido por: <a href="https://www.instagram.com/eng.florestalgustavoms?igsh=MTRqOHE0ZjcyOXdkMg==" target="_blank">@ENG.FLORESTALGUSTAVOMS</a><br>
     Manoel Emídio-PI, 2026
 </footer>
@@ -241,8 +246,15 @@
         <div class="modal-title" id="modalTitle">VITÓRIA!</div>
         <div class="modal-reason" id="modalReason">Completou o tabuleiro!</div>
         <div class="modal-score"><span>Pontuação Final</span><div id="modalScoreValue">1500</div></div>
+        
         <button class="modal-btn" onclick="closeModalAndRestart()">Jogar Novamente</button>
-        <button id="btnZap" class="share-btn">Partilhar no WhatsApp 📱</button>
+        
+        <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 5px;">Partilhar o recorde:</p>
+        <div class="share-grid">
+            <button id="btnZap" class="share-btn zap">📱 WhatsApp</button>
+            <button id="btnX" class="share-btn x">𝕏 Twitter</button>
+            <button id="btnTele" class="share-btn tele">✈️ Telegram</button>
+        </div>
     </div>
 </div>
 
@@ -322,9 +334,10 @@
         }
     }
 
-    const weights = {5:1, 6:1.3, 7:1.7, 8:2.2};
-    const errorLimits = {5:3, 6:4, 7:5, 8:6};
-    const defaultTimes = {5:60, 6:120, 7:240, 8:480};
+    // ATUALIZAÇÃO: Pesos, Erros e Tempos com o 9x9 incluído
+    const weights = {5:1, 6:1.3, 7:1.7, 8:2.2, 9:2.8};
+    const errorLimits = {5:3, 6:4, 7:5, 8:6, 9:7};
+    const defaultTimes = {5:60, 6:120, 7:240, 8:480, 9:900}; // 9x9 tem 15 minutos (900s)
 
     let size = 5, board = [], current = 1, lastPos = null;
     let startTime = 0, errors = 0, totalAttempts = 0;
@@ -436,23 +449,23 @@
         let progress = (current - 1) / (size * size);
         let efficiency = (current - 1) / (totalAttempts || 1);
         
-        // Penalização por erros: cada erro retira 5% da base
+        // Penalização por erros
         let errorPenalty = 1 - (errors * 0.05);
         let base = (progress * 500 + efficiency * 300) * (errorPenalty > 0 ? errorPenalty : 0.1);
         
         let score = (base + (win ? 500 : 0)) * weights[size];
 
-        // Bónus de Tempo (apenas no modo standard e se vencer)
+        // Bónus de Tempo
         if(win && timeMode === "standard") {
             let elapsed = Math.floor((Date.now() - startTime) / 1000);
             let timeLeft = timeLimit - elapsed;
             if (timeLeft > 0) {
-                let timeBonus = 1 + (timeLeft / timeLimit); // Se sobrar 50% do tempo, ganha 50% extra
+                let timeBonus = 1 + (timeLeft / timeLimit);
                 score *= timeBonus;
             }
         }
 
-        if(timeMode === "unlimited") score *= 0.6; // Redução maior por ser modo livre
+        if(timeMode === "unlimited") score *= 0.6;
 
         return Math.round(score);
     }
@@ -492,26 +505,21 @@
 
     async function saveRank(win, score) {
         let rawName = playerName.value.trim();
-        
-        // Filtro de Nomes
         if(rawName.length < 2) rawName = "Jogador Anónimo";
         if(rawName.length > 15) rawName = rawName.substring(0, 15);
 
         let data = {
-            player: rawName,
-            size: parseInt(size), 
-            score: parseInt(score), 
-            win: win, 
-            timeMode: timeMode, 
-            date: Date.now(),
-            v: generateToken(score) // Token de segurança
+            player: rawName, size: parseInt(size), score: parseInt(score), 
+            win: win, timeMode: timeMode, date: Date.now(), v: generateToken(score)
         };
 
-        // Configurar Botão WhatsApp (com o link da sua página!)
-        const msg = `🎮 Jogo do Cavalo: Fiz ${score} pontos no tabuleiro ${size}x${size}! Consegues bater o meu recorde? 🔥\nJoga aqui: https://gustavoms93-forest.github.io/jogo-do-cavalo/`;
-        document.getElementById('btnZap').onclick = () => {
-            window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
-        };
+        // LIGAÇÕES DE PARTILHA
+        const urlPartilha = "https://gustavoms93-forest.github.io/jogo-do-cavalo/";
+        const msgTexto = `🎮 Jogo do Cavalo: Fiz ${score} pontos no tabuleiro ${size}x${size}! Consegues bater o meu recorde? 🔥`;
+        
+        document.getElementById('btnZap').onclick = () => window.open(`https://wa.me/?text=${encodeURIComponent(msgTexto + "\nJoga aqui: " + urlPartilha)}`, '_blank');
+        document.getElementById('btnX').onclick = () => window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(msgTexto)}&url=${encodeURIComponent(urlPartilha)}`, '_blank');
+        document.getElementById('btnTele').onclick = () => window.open(`https://t.me/share/url?url=${encodeURIComponent(urlPartilha)}&text=${encodeURIComponent(msgTexto)}`, '_blank');
 
         let rank = JSON.parse(localStorage.getItem("eliteRank") || "[]");
         rank.push(data); localStorage.setItem("eliteRank", JSON.stringify(rank));
@@ -567,4 +575,3 @@
 
 </body>
 </html>
-
